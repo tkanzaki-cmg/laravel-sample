@@ -1,5 +1,13 @@
 version: '3.8'
 services:
+  panel-supply-backend-app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - 8000:80
+    depends_on:
+      - panel-supply-backend-db
   panel-supply-backend-db:
     image: mysql:8.2
     command: --default-authentication-plugin=mysql_native_password
