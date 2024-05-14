@@ -1,6 +1,6 @@
-## 推奨ローカル環境
-- PHP8.1
-- Composer version 2.6.6
+## ローカル環境
+- PHP 8.3.7
+- Docker version 25.0.4
 
 ## インストール
 - ローカル
