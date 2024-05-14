@@ -1,0 +1,26 @@
+name: Lint and format code
+run-name: Lint and format code
+
+on:
+  pull_request:
+    branches:
+      - main
+      
+jobs:
+  format-code-job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install PHP8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+      - name: Install Composer
+        run: php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+      - name: Composer install
+        run: composer install
+      - name: Pint check
+        run: composer format-test
