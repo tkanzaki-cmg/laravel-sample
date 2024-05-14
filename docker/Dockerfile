@@ -1,37 +1,37 @@
-FROM nginx:1.25.2-alpine
+FROM nginx:1.26.0-alpine
 
 # PHPパッケージをインストールし、PHPへのシンボリックリンクを作成する
 RUN apk update && \
     apk upgrade && \
     apk add --no-cache \
         curl \
-        php81 \
-        php81-fpm \
-        php81-pdo \
-        php81-pdo_mysql \
-        php81-mbstring \
-        php81-openssl \
-        php81-json \
-        php81-curl \
-        php81-gd \
-        php81-xml \
-        php81-zip \
-        php81-exif \
-        php81-iconv \
-        php81-phar \
-        php81-intl \
-        php81-bcmath \
-        php81-dom \
-        php81-xmlreader \
-        php81-xmlwriter \
-        php81-session \
-        php81-fileinfo \
-        php81-tokenizer && \
+        php83 \
+        php83-fpm \
+        php83-pdo \
+        php83-pdo_mysql \
+        php83-mbstring \
+        php83-openssl \
+        php83-json \
+        php83-curl \
+        php83-gd \
+        php83-xml \
+        php83-zip \
+        php83-exif \
+        php83-iconv \
+        php83-phar \
+        php83-intl \
+        php83-bcmath \
+        php83-dom \
+        php83-xmlreader \
+        php83-xmlwriter \
+        php83-session \
+        php83-fileinfo \
+        php83-tokenizer && \
     rm -f /usr/bin/php && \
-    ln -s /usr/bin/php81 /usr/bin/php
+    ln -s /usr/bin/php83 /usr/bin/php
 
 # 設定ファイルをコピーする
-COPY ./docker/php-fpm.conf /etc/php81/php-fpm.conf
+COPY ./docker/php-fpm.conf /etc/php83/php-fpm.conf
 COPY ./docker/nginx.conf /etc/nginx/nginx.conf
 
 # Composerをインストールする
