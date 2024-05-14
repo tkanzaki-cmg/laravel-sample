@@ -1,45 +1,62 @@
-# PHP-FPMの設定
-FROM php:8.1-fpm-alpine as php-fpm
+FROM nginx:1.25.2-alpine
 
-# 作業ディレクトリの設定
-WORKDIR /var/www/html
+# PHPパッケージをインストールし、PHPへのシンボリックリンクを作成する
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache \
+        curl \
+        php81 \
+        php81-fpm \
+        php81-pdo \
+        php81-pdo_mysql \
+        php81-mbstring \
+        php81-openssl \
+        php81-json \
+        php81-curl \
+        php81-gd \
+        php81-xml \
+        php81-zip \
+        php81-exif \
+        php81-iconv \
+        php81-phar \
+        php81-intl \
+        php81-bcmath \
+        php81-dom \
+        php81-xmlreader \
+        php81-xmlwriter \
+        php81-session \
+        php81-fileinfo \
+        php81-tokenizer && \
+    rm -f /usr/bin/php && \
+    ln -s /usr/bin/php81 /usr/bin/php
 
-# 依存パッケージのインストール
-RUN apk add --no-cache \
-    curl \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    zlib-dev \
-    libxpm-dev \
-    freetype-dev \
-    libzip-dev \
-    oniguruma-dev
-
-# PHP拡張機能のインストール
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install gd pdo pdo_mysql mbstring zip exif pcntl
-
-# Composerのインストール
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Laravelプロジェクトのコピー
-COPY . /var/www/html
-
-# Composerを使った依存関係のインストール
-RUN composer install --optimize-autoloader --no-dev
-
-# NginxとPHP-FPMを含む最終的なイメージの構築
-FROM nginx:alpine as nginx
-
-# PHP-FPM層からコードをコピー
-COPY --from=php-fpm /var/www/html /var/www/html
-
-# Nginx設定ファイルのコピー
+# 設定ファイルをコピーする
+COPY ./docker/php-fpm.conf /etc/php81/php-fpm.conf
 COPY ./docker/nginx.conf /etc/nginx/nginx.conf
 
-# ポート80を開放
+# Composerをインストールする
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# 作業ディレクトリを設定する
+WORKDIR /var/www/html
+
+# Laravelプロジェクトをコピーする
+COPY . /var/www/html
+
+# Composerの依存関係をインストールする
+RUN composer install --optimize-autoloader --no-dev
+
+# supervisordをインストールする
+RUN apk add --no-cache supervisor
+
+# supervisordの設定ファイルをコピーする
+COPY ./docker/supervisord.conf /etc/supervisord.conf
+
+# ストレージディレクトリの所有者をnginxに変更する
+RUN chown -R nginx:nginx storage/
+
+# ポート80を公開する
 EXPOSE 80
 
-# Nginxをフォアグラウンドで起動
-CMD ["nginx", "-g", "daemon off;"]
+# NginxとPHP-FPMを実行するコマンド
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
